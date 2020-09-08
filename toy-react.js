@@ -37,9 +37,11 @@ export class Component {
     setAttribute(name, value) {
         this.props[name] = value
     }
+
     appendChild(component) {
         this.children.push(component)
     }
+
     // 真实的渲染过程
     get root() {
         if (!this._root) {
@@ -67,13 +69,20 @@ export function createElement(type, attr, ...children) {
     for (let p in attr) {
         e.setAttribute(p, attr[p])
     }
-    for (let child of children) {
-        if (typeof child === 'string') {
-            child = new TextWrapper(child)
+    let insertChild = (children) => {
+        for (let child of children) {
+            if (typeof child === 'string') {
+                child = new TextWrapper(child)
+            }
+            if (Array.isArray(child)) {
+                insertChild(child)
+            } else {
+
+                e.appendChild(child)
+            }
         }
-        e.appendChild(child)
     }
-    console.log(e)
+    insertChild(children)
     return e
 }
 

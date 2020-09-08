@@ -4,11 +4,14 @@ import {createElement, render, Component } from "./toy-react";
 
 class MyComponent extends Component {
     render() {
-        return <div>my component</div>
+        return <div>
+            <h1>my component</h1>
+            {this.children}
+        </div>
     }
 }
 
 render(<MyComponent class='title'>
-    <h1>hello world</h1>
+    <h2>hello world</h2>
     <span>hi</span>
-</MyComponent>)
+</MyComponent>, document.body)
