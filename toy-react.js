@@ -1,55 +1,3 @@
-class ElementWrapper {
-    constructor(type) {
-        this.root = document.createElement(type)
-    }
-
-    setAttribute(name, value) {
-        this.root.setAttribute(name, value)
-    }
-
-    appendChild(component) {
-        this.root.appendChild(component.root)
-    }
-}
-
-/**
- * 文本节点
- */
-class TextWrapper {
-    constructor(content) {
-        this.root = document.createTextNode(content)
-    }
-}
-
-
-export function render(component, parentElement) {
-    parentElement.appendChild(component.root)
-}
-
-
-export class Component {
-    constructor() {
-        this.props = Object.create(null)
-        this.children = []
-        this._root = null
-    }
-
-    setAttribute(name, value) {
-        this.props[name] = value
-    }
-
-    appendChild(component) {
-        this.children.push(component)
-    }
-
-    // 真实的渲染过程
-    get root() {
-        if (!this._root) {
-            this._root = this.render().root
-        }
-        return this._root
-    }
-}
 
 
 /**
@@ -60,29 +8,28 @@ export class Component {
  * @returns {*}
  */
 export function createElement(type, attr, ...children) {
-    let e
-    if (typeof type === 'string') {
-        e = new ElementWrapper(type)
-    } else {
-        e = new type
-    }
-    for (let p in attr) {
-        e.setAttribute(p, attr[p])
-    }
-    let insertChild = (children) => {
-        for (let child of children) {
-            if (typeof child === 'string') {
-                child = new TextWrapper(child)
-            }
-            if (Array.isArray(child)) {
-                insertChild(child)
-            } else {
+    console.log('create', type, attr, children)
+    debugger
+    let e = document.createElement(type)
 
-                e.appendChild(child)
-            }
-        }
+    for (const key in attr) {
+        e.setAttribute(key, attr[key])
     }
-    insertChild(children)
+    children.forEach(child => {
+        if (typeof child === 'string') {
+            child = document.createTextNode(child)
+        }
+        e.appendChild(child)
+    })
     return e
 }
 
+/**
+ * 渲染
+ * @param ele createElement 生成的dom
+ * @param root 挂载的目标dom
+ */
+export function render(ele, root) {
+    console.log('render', ele)
+    root.appendChild(ele)
+}

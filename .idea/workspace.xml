@@ -11,7 +11,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="566dc409-d7a5-49af-8e1b-ef5a8f51023e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/main.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
@@ -52,7 +51,7 @@
       <workItem from="1599494075926" duration="1382000" />
       <workItem from="1599495856058" duration="791000" />
       <workItem from="1599569536833" duration="2865000" />
-      <workItem from="1599577603431" duration="909000" />
+      <workItem from="1599577603431" duration="2968000" />
     </task>
     <servers />
   </component>
@@ -70,5 +69,11 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="2065" y="241" width="670" height="676" key="search.everywhere.popup" timestamp="1599581244999">
+      <screen x="1440" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2065" y="241" width="670" height="676" key="search.everywhere.popup/0.0.1440.900/1440.0.1920.1080@1440.0.1920.1080" timestamp="1599581244999" />
   </component>
 </project>
