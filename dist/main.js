@@ -161,18 +161,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return Component; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createElement", function() { return createElement; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -196,16 +184,7 @@ var ElementWrapper = /*#__PURE__*/function () {
   }, {
     key: "appendChild",
     value: function appendChild(component) {
-      var _this$root;
-
-      // if (Array.isArray(component)) {
-      //     component.forEach(comp => {
-      //         this.root.appendChild(comp.root)
-      //     })
-      // } else {
-      //     this.root.appendChild(component.root)
-      // }
-      (_this$root = this.root).appendChild.apply(_this$root, _toConsumableArray(component.root));
+      this.root.appendChild(component.root);
     }
   }]);
 
@@ -237,7 +216,7 @@ var Component = /*#__PURE__*/function () {
   }, {
     key: "appendChild",
     value: function appendChild(component) {
-      this.children.push(component); // this.children.appendChild(component)
+      this.children.push(component);
     } // 当 appendChild 被调用，传参 component.root 时会被调用
 
   }, {
@@ -264,11 +243,6 @@ var Component = /*#__PURE__*/function () {
  */
 
 function createElement(type, attr) {
-  for (var _len = arguments.length, children = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-    children[_key - 2] = arguments[_key];
-  }
-
-  console.log('create', type, attr, children);
   var e;
 
   if (typeof type !== 'string') {
@@ -285,13 +259,25 @@ function createElement(type, attr) {
     }
   }
 
-  children.forEach(function (child) {
-    if (typeof child === 'string') {
-      child = new TextWrapper(child);
-    }
+  var insertChildren = function insertChildren(children) {
+    children.forEach(function (child) {
+      if (typeof child === 'string') {
+        child = new TextWrapper(child);
+      }
 
-    e.appendChild(child);
-  });
+      if (Array.isArray(child)) {
+        insertChildren(child);
+      } else {
+        e.appendChild(child);
+      }
+    });
+  };
+
+  for (var _len = arguments.length, children = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    children[_key - 2] = arguments[_key];
+  }
+
+  insertChildren(children);
   return e;
 }
 /**

@@ -10,13 +10,7 @@ class ElementWrapper {
 
     // 注意传入参数 和 实际渲染的是 component.root
     appendChild(component) {
-        if (Array.isArray(component)) {
-            component.forEach(comp => {
-                this.root.appendChild(comp.root)
-            })
-        } else {
-            this.root.appendChild(component.root)
-        }
+        this.root.appendChild(component.root)
     }
 }
 
@@ -41,7 +35,6 @@ export class Component {
 
     appendChild(component) {
         this.children.push(component)
-        // this.children.appendChild(component)
     }
 
     // 当 appendChild 被调用，传参 component.root 时会被调用
@@ -63,14 +56,12 @@ export class Component {
  * @returns {*}
  */
 export function createElement(type, attr, ...children) {
-    console.log('create', type, attr, children)
     let e
     if (typeof type !== 'string') {
         e = new type
     } else {
         e = new ElementWrapper(type)
     }
-
 
     for (const key in attr) {
         if (key === 'className') {
@@ -79,12 +70,20 @@ export function createElement(type, attr, ...children) {
             e.setAttribute(key, attr[key])
         }
     }
-    children.forEach(child => {
-        if (typeof child === 'string') {
-            child = new TextWrapper(child)
-        }
-        e.appendChild(child)
-    })
+    let insertChildren = (children) => {
+        children.forEach(child => {
+            if (typeof child === 'string') {
+                child = new TextWrapper(child)
+            }
+            if (Array.isArray(child)) {
+                insertChildren(child)
+            } else {
+                e.appendChild(child)
+            }
+        })
+    }
+    insertChildren(children)
+
     return e
 }
 
