@@ -1,10 +1,21 @@
-import {createElement, render } from "./toy-react";
+import {createElement, Component, render } from "./toy-react";
 
-const dom = <div className='title'>
+class My extends Component {
+    render() {
+        return (
+            <div>
+                <h4>This is My Component</h4>
+                {this.children}
+            </div>
+        )
+    }
+}
+
+const dom = <My className='title'>
     <h2>hello world</h2>
     <span>hi</span>
-</div>
+</My>
 
-console.log(dom)da t
+console.log(dom)
 
 render(dom, document.body)
