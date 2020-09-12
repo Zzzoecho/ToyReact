@@ -126,15 +126,35 @@ var My = /*#__PURE__*/function (_Component) {
   var _super = _createSuper(My);
 
   function My() {
+    var _this;
+
     _classCallCheck(this, My);
 
-    return _super.apply(this, arguments);
+    _this = _super.call(this);
+    _this.state = {
+      a: 1,
+      b: 3
+    };
+    return _this;
   }
 
   _createClass(My, [{
+    key: "handleClick",
+    value: function handleClick() {
+      this.setState({
+        a: this.state.a + 1
+      });
+    }
+  }, {
     key: "render",
     value: function render() {
-      return Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["createElement"])("div", null, Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["createElement"])("h4", null, "This is My Component"), this.children);
+      var _this2 = this;
+
+      return Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["createElement"])("div", null, Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["createElement"])("h4", null, "This is My Component"), Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["createElement"])("button", {
+        onClick: function onClick() {
+          return _this2.handleClick();
+        }
+      }, "add"), Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["createElement"])("span", null, "  ", this.state.a.toString()));
     }
   }]);
 
@@ -161,13 +181,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return Component; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createElement", function() { return createElement; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-// 渲染组件
+var RENDER_TO_DOM = Symbol("render_to_dom"); // 渲染组件
+
 var ElementWrapper = /*#__PURE__*/function () {
   function ElementWrapper(type) {
     _classCallCheck(this, ElementWrapper);
@@ -178,13 +201,28 @@ var ElementWrapper = /*#__PURE__*/function () {
   _createClass(ElementWrapper, [{
     key: "setAttribute",
     value: function setAttribute(name, value) {
-      this.root.setAttribute(name, value);
+      if (/^on([\s\S]*)$/.test(name)) {
+        console.log('--on--', RegExp.$1, value);
+        this.root.addEventListener(RegExp.$1.toLowerCase(), value);
+      } else {
+        this.root.setAttribute(name, value);
+      }
     } // 注意传入参数 和 实际渲染的是 component.root
 
   }, {
     key: "appendChild",
     value: function appendChild(component) {
-      this.root.appendChild(component.root);
+      // append 一定是放最后的
+      var range = document.createRange();
+      range.setStart(this.root, this.root.childNodes.length);
+      range.setEnd(this.root, this.root.childNodes.length);
+      component[RENDER_TO_DOM](range);
+    }
+  }, {
+    key: RENDER_TO_DOM,
+    value: function value(range) {
+      range.deleteContents();
+      range.insertNode(this.root);
     }
   }]);
 
@@ -192,11 +230,23 @@ var ElementWrapper = /*#__PURE__*/function () {
 }(); // 渲染文本
 
 
-var TextWrapper = function TextWrapper(string) {
-  _classCallCheck(this, TextWrapper);
+var TextWrapper = /*#__PURE__*/function () {
+  function TextWrapper(string) {
+    _classCallCheck(this, TextWrapper);
 
-  this.root = document.createTextNode(string);
-}; // 为了组件不用每次手动实现setAttribute 或 appendChild
+    this.root = document.createTextNode(string);
+  }
+
+  _createClass(TextWrapper, [{
+    key: RENDER_TO_DOM,
+    value: function value(range) {
+      range.deleteContents();
+      range.insertNode(this.root);
+    }
+  }]);
+
+  return TextWrapper;
+}(); // 为了组件不用每次手动实现setAttribute 或 appendChild
 
 
 var Component = /*#__PURE__*/function () {
@@ -206,6 +256,7 @@ var Component = /*#__PURE__*/function () {
     this.props = Object.create(null);
     this.children = [];
     this._root = null;
+    this._range = null;
   }
 
   _createClass(Component, [{
@@ -217,19 +268,60 @@ var Component = /*#__PURE__*/function () {
     key: "appendChild",
     value: function appendChild(component) {
       this.children.push(component);
-    } // 当 appendChild 被调用，传参 component.root 时会被调用
-
+    }
   }, {
-    key: "root",
-    get: function get() {
-      if (!this._root) {
-        console.log('root', this.render().root); // this.render() 是自定义组件自己一定会实现的方法
+    key: RENDER_TO_DOM,
+    value: function value(range) {
+      this._range = range;
+      this.render()[RENDER_TO_DOM](range);
+    }
+  }, {
+    key: "rerender",
+    value: function rerender() {
+      var oldRange = this._range; // 先插入再删除
 
-        this._root = this.render().root;
+      var range = document.createRange(); // 插入的点是一个没有范围的点
+
+      range.setStart(oldRange.startContainer, oldRange.startOffset);
+      range.setEnd(oldRange.startContainer, oldRange.startOffset); // 先删除会引起一个bug， 全空的 range 会被下一个 range 吞进去
+
+      this[RENDER_TO_DOM](range); // 将老的 range 的start移到range之后
+
+      oldRange.setStart(range.endContainer, range.endOffset);
+      oldRange.deleteContents();
+    }
+  }, {
+    key: "setState",
+    value: function setState(newState) {
+      // 短路逻辑，state 不是对象说明值类型 可直接替换
+      if (this.state === null || _typeof(this.state) !== 'object') {
+        this.state = newState;
+        this.rerender();
+        return;
       }
 
-      return this._root;
-    }
+      var merge = function merge(oldState, newState) {
+        for (var p in newState) {
+          if (oldState[p] === null || _typeof(oldState[p]) !== 'object') {
+            oldState[p] = newState[p];
+          } else {
+            merge(oldState[p], newState[p]);
+          }
+        }
+      };
+
+      merge(this.state, newState);
+      this.rerender();
+    } // 当 appendChild 被调用，传参 component.root 时会被调用
+    // get root() {
+    //     if (!this._root) {
+    //         console.log('root', this.render().root)
+    //         // this.render() 是自定义组件自己一定会实现的方法
+    //         this._root = this.render().root
+    //     }
+    //     return this._root
+    // }
+
   }]);
 
   return Component;
@@ -282,13 +374,17 @@ function createElement(type, attr) {
 }
 /**
  * 渲染
- * @param ele createElement 生成的dom
- * @param root 挂载的目标dom
+ * @param component createElement 生成的dom
+ * @param parentElement 挂载的目标dom
  */
 
-function render(ele, root) {
-  console.log('render', ele);
-  root.appendChild(ele.root);
+function render(component, parentElement) {
+  console.log('render', component);
+  var range = document.createRange();
+  range.setStart(parentElement, 0);
+  range.setEnd(parentElement, parentElement.childNodes.length);
+  range.deleteContents();
+  component[RENDER_TO_DOM](range);
 }
 
 /***/ })
